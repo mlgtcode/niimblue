@@ -14,6 +14,19 @@
       #canvas-wrapper, .canvas-wrapper {
         border: 1px solid black !important;
       }
+      /* Firefox */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: light;
+    }
+}
+
+/* Chrome */
+@media (forced-colors: active) {
+    :root {
+        color-scheme: light;
+    }
+}
     </style>
 
     <!-- Preload fonts to make canvas.js happy -->
