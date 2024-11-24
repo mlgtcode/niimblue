@@ -24,7 +24,7 @@
   import GenericObjectParamsControls from "./GenericObjectParamsControls.svelte";
   import IconPicker from "./IconPicker.svelte";
   import LabelPropsEditor from "./LabelPropsEditor.svelte";
-  import MdIcon from "./MdIcon.svelte";
+  import MdIcon from "./basic/MdIcon.svelte";
   import ObjectPicker from "./ObjectPicker.svelte";
   import PrintPreview from "./PrintPreview.svelte";
   import QrCodeParamsPanel from "./QRCodeParamsControls.svelte";
@@ -33,9 +33,10 @@
   import { DEFAULT_LABEL_PROPS, GRID_SIZE } from "../defaults";
   import { ImageEditorUtils } from "../utils/image_editor_utils";
   import SavedLabelsMenu from "./SavedLabelsMenu.svelte";
+  import { CustomCanvas } from "../fabric-object/custom_canvas";
 
   let htmlCanvas: HTMLCanvasElement;
-  let fabricCanvas: fabric.Canvas;
+  let fabricCanvas: CustomCanvas;
   let labelProps: LabelProps = DEFAULT_LABEL_PROPS;
   let previewOpened: boolean = false;
   let selectedObject: fabric.Object | undefined = undefined;
@@ -253,11 +254,11 @@
 
     fabric.disableStyleCopyPaste = true;
 
-    fabricCanvas = new fabric.Canvas(htmlCanvas, {
+    fabricCanvas = new CustomCanvas(htmlCanvas, {
       width: labelProps.size.width,
       height: labelProps.size.height,
-      backgroundColor: "#fff",
     });
+    fabricCanvas.setLabelProps(labelProps);
 
     const defaultTemplate = LocalStoragePersistence.loadDefaultTemplate();
     try {
@@ -351,6 +352,8 @@
   onDestroy(() => {
     fabricCanvas.dispose();
   });
+
+  $: fabricCanvas?.setLabelProps(labelProps);
 </script>
 
 <svelte:window on:keydown={onKeyDown} on:paste={onPaste} />
@@ -453,6 +456,10 @@
 </div>
 
 <style>
+  .canvas-wrapper {
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    background-color: rgba(60, 55, 63, 0.5);
+  }
   .canvas-wrapper.print-start-left {
     border-left: 2px solid #ff4646;
   }
