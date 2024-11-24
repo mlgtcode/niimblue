@@ -19,6 +19,7 @@
   let selectedIndex: number = -1;
   let title: string = "";
   let usedSpace: number = 0;
+  let customDefaultTemplate: boolean = LocalStoragePersistence.hasCustomDefaultTemplate();
 
   const calcUsedSpace = () => {
     usedSpace = LocalStoragePersistence.usedSpace();
@@ -76,6 +77,21 @@
     result[selectedIndex] = label;
 
     saveLabels(result);
+  };
+
+  const onMakeDefaultClicked = () => {
+    const label = onRequestLabelTemplate();
+    label.title = title;
+    label.thumbnailBase64 = undefined;
+    LocalStoragePersistence.saveDefaultTemplate(label);
+    customDefaultTemplate = true;
+    calcUsedSpace();
+  };
+
+  const onRemoveDefaultClicked = () => {
+    LocalStoragePersistence.saveDefaultTemplate(undefined);
+    customDefaultTemplate = false;
+    calcUsedSpace();
   };
 
   const onSaveClicked = () => {
@@ -141,7 +157,7 @@
     <MdIcon icon="sd_storage" />
   </button>
   <div class="saved-labels dropdown-menu" bind:this={dropdownRef}>
-    <h6 class="dropdown-header">
+    <h6 class="dropdown-header text-wrap">
       {$tr("params.saved_labels.menu_title")} - {usedSpace}
       {$tr("params.saved_labels.kb_used")}
     </h6>
@@ -188,6 +204,17 @@
       </div>
 
       <div class="d-flex gap-1 flex-wrap justify-content-end">
+        <div class="btn-group btn-group-sm make-default">
+          <button class="btn text-secondary" on:click={onMakeDefaultClicked}>
+            {$tr("params.saved_labels.make_default")}
+          </button>
+          {#if customDefaultTemplate}
+            <button class="btn text-secondary" on:click={onRemoveDefaultClicked}>
+              <MdIcon icon="close" />
+            </button>
+          {/if}
+        </div>
+
         <button class="btn btn-sm btn-secondary" on:click={onSaveClicked}>
           <MdIcon icon="save" />
           {$tr("params.saved_labels.save.browser")}
@@ -213,5 +240,8 @@
   .saved-labels.dropdown-menu {
     width: 100vw;
     max-width: 450px;
+  }
+  .make-default {
+    margin-right: auto;
   }
 </style>

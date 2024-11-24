@@ -1,11 +1,11 @@
 <script lang="ts">
   import Dropdown from "bootstrap/js/dist/dropdown";
   import { fabric } from "fabric";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, tick } from "svelte";
   import { Barcode } from "../fabric-object/barcode.class";
   import { QRCode } from "../fabric-object/qrcode.class";
   import { iconCodepoints, type MaterialIcon } from "../mdi_icons";
-  import { connectionState } from "../stores";
+  import { automation, connectionState } from "../stores";
   import {
     type ExportedLabelTemplate,
     type FabricJson,
@@ -259,7 +259,16 @@
       backgroundColor: "#fff",
     });
 
-    ImageEditorObjectHelper.addText(fabricCanvas, $tr("editor.default_text"));
+    const defaultTemplate = LocalStoragePersistence.loadDefaultTemplate();
+    try {
+      if (defaultTemplate !== null) {
+        onLoadRequested(defaultTemplate);
+      } else {
+        ImageEditorObjectHelper.addText(fabricCanvas, $tr("editor.default_text"));
+      }
+    } catch (e) {
+      Toasts.error(e);
+    }
     undo.push(fabricCanvas, labelProps);
 
     // force close dropdowns on touch devices
@@ -322,6 +331,21 @@
         });
       }
     });
+
+    if ($automation !== undefined) {
+      if ($automation.startPrint !== undefined) {
+        if ($automation.startPrint === "immediately") {
+          openPreview();
+        } else if ($automation.startPrint === "after_connect") {
+          const unsubscribe = connectionState.subscribe((st) => {
+            if (st === "connected") {
+              tick().then(() => unsubscribe());
+              openPreviewAndPrint();
+            }
+          });
+        }
+      }
+    }
   });
 
   onDestroy(() => {
@@ -332,7 +356,7 @@
 <svelte:window on:keydown={onKeyDown} on:paste={onPaste} />
 
 <div class="image-editor">
-  <div class="row mb-1">
+  <div class="row mb-3">
     <div class="col d-flex justify-content-center">
       <div class="canvas-wrapper print-start-{labelProps.printDirection}">
         <canvas bind:this={htmlCanvas}></canvas>
@@ -370,7 +394,7 @@
           onPlaceholderPicked={onCsvPlaceholderPicked} />
 
         <IconPicker onSubmit={onIconPicked} />
-        <ObjectPicker onSubmit={onObjectPicked} labelProps={labelProps} zplImageReady={zplImageReady} />
+        <ObjectPicker onSubmit={onObjectPicked} {labelProps} {zplImageReady} />
 
         <button class="btn btn-sm btn-primary ms-1" on:click={openPreview}>
           <MdIcon icon="visibility" />
