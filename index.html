@@ -12,7 +12,25 @@
     <link rel="canonical" href="%VITE_DEPLOY_BASE_URL%/">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <style>
+      #canvas-wrapper, .canvas-wrapper {
+        border: 1px solid black !important;
+      }
+      /* Firefox */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: light;
+    }
+}
 
+/* Chrome */
+@media (forced-colors: active) {
+    :root {
+        color-scheme: light;
+    }
+}
+    </style>
     <!-- Preload fonts to make canvas.js happy -->
     <link rel="preload" as="font" type="font/woff2" crossorigin="anonymous"
           href="node_modules/@fontsource-variable/noto-sans/files/noto-sans-latin-wght-normal.woff2"/>
